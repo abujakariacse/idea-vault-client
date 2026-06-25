@@ -38,7 +38,7 @@ export default function AddIdea() {
       };
       await api.post("/ideas", data);
       toast.success("Idea submitted successfully");
-      navigate("/my-ideas");
+      navigate("/dashboard/my-ideas");
     } catch (err) {
       toast.error("Failed to submit idea");
     } finally {
