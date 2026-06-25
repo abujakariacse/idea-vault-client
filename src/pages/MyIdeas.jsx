@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 import api from "../utils/api";
 import Loading from "../components/Loading";
 import toast from "react-hot-toast";
-import { Edit, Trash2, Eye, Heart, ThumbsDown } from "lucide-react";
-import { motion } from "framer-motion";
+import { Edit, Trash2, Eye, Heart, ThumbsDown, X, PenTool } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function MyIdeas() {
   const [ideas, setIdeas] = useState([]);
@@ -159,49 +159,104 @@ export default function MyIdeas() {
         </div>
       )}
 
-      {editIdea && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Edit Idea</h3>
-            <form onSubmit={handleEdit} className="space-y-4">
-              <input
-                type="text"
-                value={editForm.title}
-                onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                className="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              />
-              <textarea
-                value={editForm.shortDescription}
-                onChange={(e) => setEditForm({ ...editForm, shortDescription: e.target.value })}
-                className="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white resize-none"
-                rows="2"
-              />
-              <textarea
-                value={editForm.detailedDescription}
-                onChange={(e) => setEditForm({ ...editForm, detailedDescription: e.target.value })}
-                className="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white resize-none"
-                rows="4"
-              />
-              <div className="flex gap-2">
-                <button type="submit" className="flex-1 py-2 bg-primary text-white rounded-lg">
-                  Save
-                </button>
-                <button
-                  type="button"
+      <AnimatePresence>
+        {editIdea && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+            >
+              <div className="px-6 py-4 border-b dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-800/50">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                    <PenTool className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">Edit Idea</h3>
+                </div>
+                <button 
                   onClick={() => setEditIdea(null)}
-                  className="flex-1 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg"
+                  className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
                 >
-                  Cancel
+                  <X className="w-5 h-5" />
                 </button>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
+              
+              <form onSubmit={handleEdit} className="flex flex-col overflow-hidden">
+                <div className="p-6 overflow-y-auto space-y-5">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Idea Title</label>
+                    <input
+                      type="text"
+                      value={editForm.title}
+                      onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                      className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                      placeholder="Give it a catchy name"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Short Description</label>
+                    <textarea
+                      value={editForm.shortDescription}
+                      onChange={(e) => setEditForm({ ...editForm, shortDescription: e.target.value })}
+                      className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all resize-none"
+                      rows="2"
+                      placeholder="A quick summary of your idea"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Detailed Description</label>
+                    <textarea
+                      value={editForm.detailedDescription}
+                      onChange={(e) => setEditForm({ ...editForm, detailedDescription: e.target.value })}
+                      className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all resize-none"
+                      rows="6"
+                      placeholder="Explain the problem, solution, and vision in detail"
+                    />
+                  </div>
+                </div>
+                
+                <div className="px-6 py-4 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setEditIdea(null)}
+                    className="px-5 py-2.5 text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    className="px-6 py-2.5 bg-primary text-white font-medium rounded-xl hover:bg-primary-dark shadow-sm hover:shadow-md transition-all"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {deleteConfirm && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-sm">
+      <AnimatePresence>
+        {deleteConfirm && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-sm shadow-2xl"
+            >
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Delete Idea?</h3>
             <p className="text-gray-600 dark:text-gray-300 mb-6">This action cannot be undone.</p>
             <div className="flex gap-2">
@@ -218,9 +273,10 @@ export default function MyIdeas() {
                 Cancel
               </button>
             </div>
-          </div>
-        </div>
-      )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

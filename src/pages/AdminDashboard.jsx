@@ -2,12 +2,13 @@ import { useState, useEffect } from "react";
 import api from "../utils/api";
 import Loading from "../components/Loading";
 import toast from "react-hot-toast";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("users");
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -25,14 +26,16 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure?")) return;
+  const handleDelete = async () => {
+    if (!deleteConfirm) return;
     try {
-      await api.delete(`/admin/${activeTab}/${id}`);
-      setData(data.filter((item) => item._id !== id));
+      await api.delete(`/admin/${activeTab}/${deleteConfirm}`);
+      setData(data.filter((item) => item._id !== deleteConfirm));
       toast.success("Deleted successfully");
     } catch (err) {
       toast.error("Failed to delete");
+    } finally {
+      setDeleteConfirm(null);
     }
   };
 
@@ -98,7 +101,7 @@ export default function AdminDashboard() {
                     </td>
                     <td className="py-3 px-4">
                       <button
-                        onClick={() => handleDelete(item._id)}
+                        onClick={() => setDeleteConfirm(item._id)}
                         className="text-red-500 hover:text-red-700 font-semibold"
                       >
                         Delete
@@ -112,6 +115,41 @@ export default function AdminDashboard() {
           </div>
         )}
       </motion.div>
+
+      <AnimatePresence>
+        {deleteConfirm && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-sm shadow-2xl"
+            >
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Confirm Deletion</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">Are you sure you want to delete this {activeTab.slice(0, -1)}? This action cannot be undone.</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleDelete}
+                  className="flex-1 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                >
+                  Delete
+                </button>
+                <button
+                  onClick={() => setDeleteConfirm(null)}
+                  className="flex-1 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg"
+                >
+                  Cancel
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
