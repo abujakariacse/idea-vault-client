@@ -3,7 +3,8 @@ import { Link, useSearchParams } from "react-router-dom";
 import api from "../utils/api";
 import IdeaCard from "../components/IdeaCard";
 import Loading from "../components/Loading";
-import { Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, LayoutGrid, ArrowUpDown } from "lucide-react";
+import { motion } from "framer-motion";
 
 const categories = ["Tech", "AI", "Health", "Education", "Finance", "Productivity"];
 const sortOptions = [
@@ -59,9 +60,15 @@ export default function Ideas() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Browse Ideas</h1>
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+        
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-2 flex flex-col md:flex-row gap-2 md:items-center"
+        >
+          {/* Search Bar */}
+          <div className="flex-1 flex items-center px-4 py-2.5 bg-gray-50 dark:bg-gray-900/50 rounded-xl focus-within:ring-2 focus-within:ring-primary/50 transition-all border border-transparent focus-within:border-primary/20 dark:focus-within:border-primary/20 group">
+            <Search className="w-5 h-5 text-gray-400 group-focus-within:text-primary transition-colors shrink-0" />
             <input
               type="text"
               placeholder="Search ideas..."
@@ -69,33 +76,58 @@ export default function Ideas() {
               onKeyDown={(e) => {
                 if (e.key === "Enter") updateFilter("search", e.target.value);
               }}
-              className="w-full pl-10 pr-4 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-primary outline-none"
+              className="w-full pl-3 bg-transparent border-none outline-none text-gray-900 dark:text-gray-100 placeholder-gray-400 text-sm"
             />
           </div>
-          <select
-            value={category}
-            onChange={(e) => updateFilter("category", e.target.value)}
-            className="px-4 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-primary outline-none"
-          >
-            <option value="">All Categories</option>
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
-          <select
-            value={sort}
-            onChange={(e) => updateFilter("sort", e.target.value)}
-            className="px-4 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-primary outline-none"
-          >
-            {sortOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </div>
+
+          <div className="hidden md:block w-px h-8 bg-gray-200 dark:bg-gray-700 mx-2"></div>
+
+          {/* Filters */}
+          <div className="flex gap-2 w-full md:w-auto">
+            <div className="relative flex-1 md:w-48 group">
+              <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                <LayoutGrid className="w-4 h-4 text-gray-400 group-hover:text-primary transition-colors" />
+              </div>
+              <select
+                value={category}
+                onChange={(e) => updateFilter("category", e.target.value)}
+                className="w-full pl-9 pr-8 py-3 appearance-none bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-transparent hover:border-gray-200 dark:hover:border-gray-600 focus:border-primary focus:ring-2 focus:ring-primary/50 dark:text-gray-200 outline-none transition-all cursor-pointer text-sm font-medium"
+              >
+                <option value="">All Categories</option>
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+              {/* Custom Dropdown Arrow */}
+              <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+              </div>
+            </div>
+
+            <div className="relative flex-1 md:w-48 group">
+              <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                <ArrowUpDown className="w-4 h-4 text-gray-400 group-hover:text-primary transition-colors" />
+              </div>
+              <select
+                value={sort}
+                onChange={(e) => updateFilter("sort", e.target.value)}
+                className="w-full pl-9 pr-8 py-3 appearance-none bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-transparent hover:border-gray-200 dark:hover:border-gray-600 focus:border-primary focus:ring-2 focus:ring-primary/50 dark:text-gray-200 outline-none transition-all cursor-pointer text-sm font-medium"
+              >
+                {sortOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+              {/* Custom Dropdown Arrow */}
+              <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </div>
 
       {loading ? (

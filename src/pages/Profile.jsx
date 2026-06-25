@@ -7,14 +7,47 @@ import { User, Camera, AlertTriangle } from "lucide-react";
 export default function Profile() {
   const { user, setUser } = useAuth();
   const [form, setForm] = useState({ name: user?.name || "", photo: user?.photo || "" });
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        return toast.error("Image must be less than 5MB");
+      }
+      setPhotoFile(file);
+      setPhotoPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const uploadToImgBB = async (file) => {
+    const formData = new FormData();
+    formData.append("image", file);
+    const apiKey = import.meta.env.VITE_IMGBB_API_KEY;
+    if (!apiKey) throw new Error("ImgBB API key is missing.");
+    const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+      method: "POST",
+      body: formData,
+    });
+    const data = await response.json();
+    if (data.success) return data.data.url;
+    throw new Error("Failed to upload image");
+  };
 
   const handleUpdate = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await api.put("/users/profile", form);
+      let finalPhotoUrl = form.photo;
+      if (photoFile) {
+        finalPhotoUrl = await uploadToImgBB(photoFile);
+      }
+      const res = await api.put("/users/profile", { ...form, photo: finalPhotoUrl });
       setUser(res.data);
+      setForm({ ...form, photo: finalPhotoUrl });
+      setPhotoFile(null);
       toast.success("Profile updated successfully");
     } catch (err) {
       toast.error("Failed to update profile");
@@ -53,23 +86,19 @@ export default function Profile() {
 
         <form onSubmit={handleUpdate} className="space-y-6">
           <div className="flex items-center gap-6 pb-6 border-b border-gray-100 dark:border-gray-700">
-            <div className="relative group">
+            <label className="relative group cursor-pointer block w-24 h-24 rounded-full">
               <img
-                src={form.photo || `https://ui-avatars.com/api/?name=${form.name}`}
+                src={photoPreview || form.photo || `https://ui-avatars.com/api/?name=${form.name}`}
                 alt={form.name}
-                className="w-24 h-24 rounded-full object-cover border-4 border-gray-50 dark:border-gray-700"
+                className="w-full h-full rounded-full object-cover border-4 border-gray-50 dark:border-gray-700"
               />
-              <button
-                type="button"
-                onClick={() => {
-                  const url = prompt("Enter photo URL:");
-                  if (url) setForm({ ...form, photo: url });
-                }}
+              <div
                 className="absolute inset-0 flex items-center justify-center bg-black/50 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 <Camera className="w-6 h-6" />
-              </button>
-            </div>
+              </div>
+              <input type="file" className="hidden" accept="image/*" onChange={handlePhotoChange} />
+            </label>
             <div>
               <p className="font-medium text-gray-900 dark:text-white mb-1">Profile Photo</p>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
