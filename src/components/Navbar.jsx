@@ -18,7 +18,7 @@ export default function Navbar() {
   };
 
   const navLinkClass = (path) =>
-    `transition-colors ${isActive(path) ? "text-primary font-bold" : "text-gray-700 dark:text-gray-200 hover:text-primary"}`;
+    `px-3 py-2 rounded-lg font-medium transition-all ${isActive(path) ? "bg-primary/10 text-primary dark:bg-primary/20" : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary"}`;
 
   const mobileNavLinkClass = (path) =>
     `block px-4 py-3 rounded-lg font-medium transition-colors ${isActive(path) ? "bg-primary/10 text-primary" : "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200"}`;
