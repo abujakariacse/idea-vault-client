@@ -47,14 +47,8 @@ export default function Navbar() {
             </Link>
             {user ? (
               <div className="md:flex gap-6">
-                <Link to="/add-idea" className={navLinkClass("/add-idea")}>
-                  Add Idea
-                </Link>
-                <Link to="/my-ideas" className={navLinkClass("/my-ideas")}>
-                  My Ideas
-                </Link>
-                <Link to="/my-interactions" className={navLinkClass("/my-interactions")}>
-                  My Interactions
+                <Link to="/dashboard" className={navLinkClass("/dashboard")}>
+                  Dashboard
                 </Link>
               </div>
             ) : null}
@@ -92,7 +86,7 @@ export default function Navbar() {
                 {profileOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
                     <Link
-                      to="/my-profile"
+                      to="/dashboard"
                       className="flex items-center gap-2 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 transition-colors"
                       onClick={() => setProfileOpen(false)}
                     >

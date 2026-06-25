@@ -75,37 +75,18 @@ function AppContent() {
                 }
               />
               <Route
-                path="/add-idea"
+                path="/dashboard"
                 element={
                   <ProtectedRoute>
-                    <AddIdea />
+                    <Dashboard />
                   </ProtectedRoute>
                 }
-              />
-              <Route
-                path="/my-ideas"
-                element={
-                  <ProtectedRoute>
-                    <MyIdeas />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/my-interactions"
-                element={
-                  <ProtectedRoute>
-                    <MyInteractions />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/my-profile"
-                element={
-                  <ProtectedRoute>
-                    <Profile />
-                  </ProtectedRoute>
-                }
-              />
+              >
+                <Route index element={<Profile />} />
+                <Route path="add-idea" element={<AddIdea />} />
+                <Route path="my-ideas" element={<MyIdeas />} />
+                <Route path="my-interactions" element={<MyInteractions />} />
+              </Route>
               <Route
                 path="/admin/dashboard"
                 element={

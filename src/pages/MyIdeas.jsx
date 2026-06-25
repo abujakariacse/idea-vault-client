@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import api from "../utils/api";
-import IdeaCard from "../components/IdeaCard";
 import Loading from "../components/Loading";
 import toast from "react-hot-toast";
+import { Edit, Trash2, Eye, Heart, ThumbsDown } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function MyIdeas() {
   const [ideas, setIdeas] = useState([]);
@@ -66,34 +67,95 @@ export default function MyIdeas() {
           <p className="text-gray-500 dark:text-gray-400 text-lg">
             You haven't shared any ideas yet
           </p>
-          <Link to="/add-idea" className="text-primary hover:underline mt-2 inline-block">
+          <Link to="/dashboard/add-idea" className="text-primary hover:underline mt-2 inline-block">
             Submit your first idea
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {ideas.map((idea) => (
-            <div key={idea._id} className="relative">
-              <IdeaCard idea={idea} />
-              <div className="absolute top-2 right-2 flex gap-2">
-                <button
-                  onClick={() => {
-                    setEditIdea(idea);
-                    setEditForm(idea);
-                  }}
-                  className="p-2 bg-white dark:bg-gray-800 rounded-lg shadow hover:bg-gray-50 dark:hover:bg-gray-700"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => setDeleteConfirm(idea._id)}
-                  className="p-2 bg-red-500 text-white rounded-lg shadow hover:bg-red-600"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700">
+                  <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">Idea Name</th>
+                  <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">Category</th>
+                  <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">Engagement</th>
+                  <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">Date Added</th>
+                  <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                {ideas.map((idea, index) => (
+                  <motion.tr 
+                    key={idea._id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors"
+                  >
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        {idea.image ? (
+                          <img src={idea.image} alt={idea.title} className="w-10 h-10 rounded-lg object-cover shrink-0" />
+                        ) : (
+                          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold shrink-0">
+                            {idea.title.charAt(0)}
+                          </div>
+                        )}
+                        <div>
+                          <p className="font-semibold text-gray-900 dark:text-white line-clamp-1">{idea.title}</p>
+                          <p className="text-xs text-gray-500 line-clamp-1">{idea.shortDescription}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="inline-flex px-2.5 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary whitespace-nowrap">
+                        {idea.category}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3 text-sm">
+                        <span className="flex items-center gap-1 text-gray-600 dark:text-gray-300">
+                          <Heart className="w-3.5 h-3.5 text-red-500" /> {idea.likeCount || 0}
+                        </span>
+                        <span className="flex items-center gap-1 text-gray-600 dark:text-gray-300">
+                          <ThumbsDown className="w-3.5 h-3.5" /> {idea.dislikeCount || 0}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                      {new Date(idea.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <Link 
+                          to={`/ideas/${idea._id}`}
+                          className="p-1.5 text-gray-500 hover:text-primary hover:bg-primary/10 rounded-md transition-colors"
+                          title="View"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Link>
+                        <button 
+                          onClick={() => { setEditIdea(idea); setEditForm(idea); }}
+                          className="p-1.5 text-gray-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors"
+                          title="Edit"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={() => setDeleteConfirm(idea._id)}
+                          className="p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
+                          title="Delete"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </motion.tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
