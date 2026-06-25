@@ -2,14 +2,41 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Upload, X } from "lucide-react";
 
 export default function Register() {
   const { register, googleLogin } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ name: "", email: "", photo: "", password: "" });
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        return toast.error("Image must be less than 5MB");
+      }
+      setPhotoFile(file);
+      setPhotoPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const uploadToImgBB = async (file) => {
+    const formData = new FormData();
+    formData.append("image", file);
+    const apiKey = import.meta.env.VITE_IMGBB_API_KEY;
+    if (!apiKey) throw new Error("ImgBB API key is missing.");
+    const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+      method: "POST",
+      body: formData,
+    });
+    const data = await response.json();
+    if (data.success) return data.data.url;
+    throw new Error("Failed to upload image");
+  };
 
   const validatePassword = (pwd) => {
     if (pwd.length < 6) return "Password must be at least 6 characters";
@@ -27,7 +54,12 @@ export default function Register() {
     }
     setLoading(true);
     try {
-      await register(form.name, form.email, form.photo, form.password);
+      let photoUrl = form.photo;
+      if (photoFile) {
+        photoUrl = await uploadToImgBB(photoFile);
+      }
+
+      await register(form.name, form.email, photoUrl, form.password);
       navigate("/");
     } catch (err) {
       toast.error(typeof err === "string" ? err : "Registration failed");
@@ -117,15 +149,29 @@ export default function Register() {
           </div>
           <div>
             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
-              Photo URL (Optional)
+              Profile Photo (Optional)
             </label>
-            <input
-              type="url"
-              value={form.photo}
-              onChange={(e) => setForm({ ...form, photo: e.target.value })}
-              className="w-full px-4 py-3 border rounded-xl dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-shadow"
-              placeholder="https://example.com/photo.jpg"
-            />
+            {photoPreview ? (
+              <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-gray-200 dark:border-gray-700 mx-auto">
+                <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPhotoFile(null);
+                    setPhotoPreview(null);
+                  }}
+                  className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+            ) : (
+              <label className="flex items-center justify-center w-full px-4 py-3 border-2 border-dashed rounded-xl cursor-pointer bg-gray-50 dark:bg-gray-700/50 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                <Upload className="w-5 h-5 text-gray-400 mr-2" />
+                <span className="text-sm text-gray-500 dark:text-gray-400">Upload Photo</span>
+                <input type="file" className="hidden" accept="image/*" onChange={handlePhotoChange} />
+              </label>
+            )}
           </div>
           <div>
             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">

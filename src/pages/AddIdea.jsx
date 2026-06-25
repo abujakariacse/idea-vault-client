@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
 import toast from "react-hot-toast";
+import { Upload, X } from "lucide-react";
 
 const categories = ["Tech", "AI", "Health", "Education", "Finance", "Productivity"];
 
@@ -19,7 +20,34 @@ export default function AddIdea() {
     problemStatement: "",
     proposedSolution: "",
   });
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        return toast.error("Image must be less than 5MB");
+      }
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const uploadToImgBB = async (file) => {
+    const formData = new FormData();
+    formData.append("image", file);
+    const apiKey = import.meta.env.VITE_IMGBB_API_KEY;
+    if (!apiKey) throw new Error("ImgBB API key is missing.");
+    const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+      method: "POST",
+      body: formData,
+    });
+    const data = await response.json();
+    if (data.success) return data.data.url;
+    throw new Error("Failed to upload image");
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,8 +57,14 @@ export default function AddIdea() {
     }
     setLoading(true);
     try {
+      let imageUrl = form.image;
+      if (imageFile) {
+        imageUrl = await uploadToImgBB(imageFile);
+      }
+
       const data = {
         ...form,
+        image: imageUrl,
         tags: form.tags
           .split(",")
           .map((t) => t.trim())
@@ -136,15 +170,31 @@ export default function AddIdea() {
           </div>
           <div>
             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
-              Image URL
+              Cover Image (Optional)
             </label>
-            <input
-              type="url"
-              value={form.image}
-              onChange={(e) => setForm({ ...form, image: e.target.value })}
-              className="w-full px-4 py-3 border rounded-xl dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-shadow"
-              placeholder="https://example.com/image.jpg"
-            />
+            {imagePreview ? (
+              <div className="relative w-full h-32 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
+                <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setImageFile(null);
+                    setImagePreview(null);
+                  }}
+                  className="absolute top-2 right-2 bg-black/50 text-white p-1 rounded-full hover:bg-black/70 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer bg-gray-50 dark:bg-gray-700/50 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  <Upload className="w-6 h-6 text-gray-400 mb-2" />
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Click to upload an image</p>
+                </div>
+                <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
+              </label>
+            )}
           </div>
         </div>
 
