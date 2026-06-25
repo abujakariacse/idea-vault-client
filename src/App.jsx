@@ -18,6 +18,9 @@ import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminRoute from "./components/AdminRoute";
+import { AnimatePresence, motion } from "framer-motion";
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -50,56 +53,72 @@ function AppContent() {
       <ScrollToTop />
       <Navbar />
       <main className="flex-1 overflow-hidden">
-        <div key={location.pathname} className="animate-page-in">
-          <Routes location={location}>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/ideas" element={<Ideas />} />
-            <Route
-              path="/ideas/:id"
-              element={
-                <ProtectedRoute>
-                  <IdeaDetails />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/add-idea"
-              element={
-                <ProtectedRoute>
-                  <AddIdea />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/my-ideas"
-              element={
-                <ProtectedRoute>
-                  <MyIdeas />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/my-interactions"
-              element={
-                <ProtectedRoute>
-                  <MyInteractions />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/my-profile"
-              element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              }
-            />
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Routes location={location}>
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/ideas" element={<Ideas />} />
+              <Route
+                path="/ideas/:id"
+                element={
+                  <ProtectedRoute>
+                    <IdeaDetails />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/add-idea"
+                element={
+                  <ProtectedRoute>
+                    <AddIdea />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/my-ideas"
+                element={
+                  <ProtectedRoute>
+                    <MyIdeas />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/my-interactions"
+                element={
+                  <ProtectedRoute>
+                    <MyInteractions />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/my-profile"
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/dashboard"
+                element={
+                  <AdminRoute>
+                    <AdminDashboard />
+                  </AdminRoute>
+                }
+              />
 
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </div>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </motion.div>
+        </AnimatePresence>
       </main>
       <Footer />
       <FloatingChat />

@@ -1,0 +1,117 @@
+import { useState, useEffect } from "react";
+import api from "../utils/api";
+import Loading from "../components/Loading";
+import toast from "react-hot-toast";
+import { motion } from "framer-motion";
+
+export default function AdminDashboard() {
+  const [activeTab, setActiveTab] = useState("users");
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchData();
+  }, [activeTab]);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get(`/admin/${activeTab}`);
+      setData(res.data);
+    } catch (err) {
+      toast.error(`Failed to load ${activeTab}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure?")) return;
+    try {
+      await api.delete(`/admin/${activeTab}/${id}`);
+      setData(data.filter((item) => item._id !== id));
+      toast.success("Deleted successfully");
+    } catch (err) {
+      toast.error("Failed to delete");
+    }
+  };
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 md:p-8"
+      >
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Admin Dashboard</h1>
+        <div className="flex gap-4 border-b dark:border-gray-700 mb-6">
+          {["users", "ideas", "comments"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-4 py-2 capitalize font-semibold transition-colors ${
+                activeTab === tab
+                  ? "border-b-2 border-primary text-primary"
+                  : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+
+        {loading ? (
+          <Loading />
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b dark:border-gray-700 text-gray-700 dark:text-gray-300">
+                  <th className="py-3 px-4">ID</th>
+                  <th className="py-3 px-4">Info</th>
+                  <th className="py-3 px-4">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.map((item) => (
+                  <tr key={item._id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                    <td className="py-3 px-4 font-mono text-sm text-gray-500">{item._id.substring(0, 8)}...</td>
+                    <td className="py-3 px-4">
+                      {activeTab === "users" && (
+                        <div>
+                          <p className="font-semibold text-gray-900 dark:text-white">{item.name}</p>
+                          <p className="text-sm text-gray-500">{item.email}</p>
+                        </div>
+                      )}
+                      {activeTab === "ideas" && (
+                        <div>
+                          <p className="font-semibold text-gray-900 dark:text-white">{item.title}</p>
+                          <p className="text-sm text-gray-500">By {item.author?.name || "Unknown"}</p>
+                        </div>
+                      )}
+                      {activeTab === "comments" && (
+                        <div>
+                          <p className="text-gray-900 dark:text-white truncate max-w-md">{item.text}</p>
+                          <p className="text-sm text-gray-500">By {item.user?.name || "Unknown"} on {item.idea?.title}</p>
+                        </div>
+                      )}
+                    </td>
+                    <td className="py-3 px-4">
+                      <button
+                        onClick={() => handleDelete(item._id)}
+                        className="text-red-500 hover:text-red-700 font-semibold"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {data.length === 0 && <p className="text-center py-6 text-gray-500">No {activeTab} found.</p>}
+          </div>
+        )}
+      </motion.div>
+    </div>
+  );
+}
