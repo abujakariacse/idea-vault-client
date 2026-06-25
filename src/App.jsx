@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate, useLocation, Navigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider, useAuth } from "./context/AuthContext";
@@ -19,6 +19,7 @@ import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminReports from "./pages/AdminReports";
 import AdminRoute from "./components/AdminRoute";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -34,6 +35,12 @@ const DocumentTitle = ({ children }) => {
   const location = useLocation();
   document.title = children ? `${children} | IdeaVault` : "IdeaVault";
   return null;
+};
+
+const DashboardIndex = () => {
+  const { user } = useAuth();
+  if (user?.role === 'admin' || user?.role === 'super-admin') return <Navigate to="/dashboard/users" replace />;
+  return <Navigate to="/dashboard/profile" replace />;
 };
 
 function AppContent() {
@@ -82,20 +89,19 @@ function AppContent() {
                   </ProtectedRoute>
                 }
               >
-                <Route index element={<Profile />} />
+                <Route index element={<DashboardIndex />} />
+                <Route path="profile" element={<Profile />} />
                 <Route path="add-idea" element={<AddIdea />} />
                 <Route path="my-ideas" element={<MyIdeas />} />
                 <Route path="my-interactions" element={<MyInteractions />} />
+                <Route path="users" element={<AdminRoute><AdminDashboard type="users" /></AdminRoute>} />
+                <Route path="all-ideas" element={<AdminRoute><AdminDashboard type="ideas" /></AdminRoute>} />
+                <Route path="all-comments" element={<AdminRoute><AdminDashboard type="comments" /></AdminRoute>} />
+                <Route path="reports" element={<AdminRoute><AdminReports /></AdminRoute>} />
               </Route>
-              <Route
-                path="/admin/dashboard"
-                element={
-                  <AdminRoute>
-                    <AdminDashboard />
-                  </AdminRoute>
-                }
-              />
 
+
+              <Route path="/admin/dashboard" element={<Navigate to="/dashboard/users" replace />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </motion.div>

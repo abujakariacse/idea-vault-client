@@ -3,33 +3,44 @@ import api from "../utils/api";
 import Loading from "../components/Loading";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "../context/AuthContext";
 
-export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState("users");
+export default function AdminDashboard({ type }) {
+  const { user } = useAuth();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   useEffect(() => {
     fetchData();
-  }, [activeTab]);
+  }, [type]);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await api.get(`/admin/${activeTab}`);
+      const res = await api.get(`/admin/${type}`);
       setData(res.data);
     } catch (err) {
-      toast.error(`Failed to load ${activeTab}`);
+      toast.error(`Failed to load ${type}`);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRoleChange = async (userId, newRole) => {
+    try {
+      await api.put(`/admin/users/${userId}/role`, { role: newRole });
+      setData(data.map(u => u._id === userId ? { ...u, role: newRole } : u));
+      toast.success("User role updated");
+    } catch (err) {
+      toast.error("Failed to update role");
     }
   };
 
   const handleDelete = async () => {
     if (!deleteConfirm) return;
     try {
-      await api.delete(`/admin/${activeTab}/${deleteConfirm}`);
+      await api.delete(`/admin/${type}/${deleteConfirm}`);
       setData(data.filter((item) => item._id !== deleteConfirm));
       toast.success("Deleted successfully");
     } catch (err) {
@@ -46,22 +57,7 @@ export default function AdminDashboard() {
         animate={{ opacity: 1, y: 0 }}
         className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 md:p-8"
       >
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Admin Dashboard</h1>
-        <div className="flex gap-4 border-b dark:border-gray-700 mb-6">
-          {["users", "ideas", "comments"].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 capitalize font-semibold transition-colors ${
-                activeTab === tab
-                  ? "border-b-2 border-primary text-primary"
-                  : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6 capitalize">Manage {type}</h1>
 
         {loading ? (
           <Loading />
@@ -80,19 +76,19 @@ export default function AdminDashboard() {
                   <tr key={item._id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
                     <td className="py-3 px-4 font-mono text-sm text-gray-500">{item._id.substring(0, 8)}...</td>
                     <td className="py-3 px-4">
-                      {activeTab === "users" && (
+                      {type === "users" && (
                         <div>
                           <p className="font-semibold text-gray-900 dark:text-white">{item.name}</p>
                           <p className="text-sm text-gray-500">{item.email}</p>
                         </div>
                       )}
-                      {activeTab === "ideas" && (
+                      {type === "ideas" && (
                         <div>
                           <p className="font-semibold text-gray-900 dark:text-white">{item.title}</p>
                           <p className="text-sm text-gray-500">By {item.author?.name || "Unknown"}</p>
                         </div>
                       )}
-                      {activeTab === "comments" && (
+                      {type === "comments" && (
                         <div>
                           <p className="text-gray-900 dark:text-white truncate max-w-md">{item.text}</p>
                           <p className="text-sm text-gray-500">By {item.user?.name || "Unknown"} on {item.idea?.title}</p>
@@ -100,9 +96,22 @@ export default function AdminDashboard() {
                       )}
                     </td>
                     <td className="py-3 px-4">
+                      {type === "users" && (
+                        <select
+                          value={item.role}
+                          onChange={(e) => handleRoleChange(item._id, e.target.value)}
+                          disabled={item._id === (user?.id || user?._id) || (item.role === 'super-admin' && user?.role !== 'super-admin')}
+                          className="mr-4 px-2 py-1 text-sm border rounded-lg bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-primary/50 transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <option value="user">User</option>
+                          <option value="admin">Admin</option>
+                          {user?.role === 'super-admin' && <option value="super-admin">Super Admin</option>}
+                        </select>
+                      )}
                       <button
                         onClick={() => setDeleteConfirm(item._id)}
-                        className="text-red-500 hover:text-red-700 font-semibold"
+                        disabled={item._id === (user?.id || user?._id) || (item.role === 'super-admin' && user?.role !== 'super-admin')}
+                        className="text-red-500 hover:text-red-700 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Delete
                       </button>
@@ -111,7 +120,7 @@ export default function AdminDashboard() {
                 ))}
               </tbody>
             </table>
-            {data.length === 0 && <p className="text-center py-6 text-gray-500">No {activeTab} found.</p>}
+            {data.length === 0 && <p className="text-center py-6 text-gray-500">No {type} found.</p>}
           </div>
         )}
       </motion.div>
@@ -131,7 +140,7 @@ export default function AdminDashboard() {
               className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-sm shadow-2xl"
             >
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Confirm Deletion</h3>
-              <p className="text-gray-600 dark:text-gray-300 mb-6">Are you sure you want to delete this {activeTab.slice(0, -1)}? This action cannot be undone.</p>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">Are you sure you want to delete this {type.slice(0, -1)}? This action cannot be undone.</p>
               <div className="flex gap-2">
                 <button
                   onClick={handleDelete}

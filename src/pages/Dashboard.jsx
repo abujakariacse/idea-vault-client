@@ -1,17 +1,28 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { PlusCircle, BookOpen, MessageSquare, LayoutDashboard } from 'lucide-react';
+import { PlusCircle, BookOpen, MessageSquare, LayoutDashboard, ShieldCheck, Users, Lightbulb, Flag } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function Dashboard() {
   const location = useLocation();
   const { user } = useAuth();
 
-  const menuItems = [
-    { icon: <LayoutDashboard className="w-5 h-5" />, label: 'Overview & Profile', path: '/dashboard' },
+  const adminMenu = [
+    { icon: <Flag className="w-5 h-5 text-red-500" />, label: 'Manage Reports', path: '/dashboard/reports' },
+    { icon: <Users className="w-5 h-5" />, label: 'Manage Users', path: '/dashboard/users' },
+    { icon: <BookOpen className="w-5 h-5" />, label: 'Manage Ideas', path: '/dashboard/all-ideas' },
+    { icon: <MessageSquare className="w-5 h-5" />, label: 'Manage Comments', path: '/dashboard/all-comments' },
+    { icon: <LayoutDashboard className="w-5 h-5" />, label: 'My Profile', path: '/dashboard/profile' },
+    { icon: <PlusCircle className="w-5 h-5" />, label: 'Add Idea', path: '/dashboard/add-idea' },
+  ];
+
+  const userMenu = [
+    { icon: <LayoutDashboard className="w-5 h-5" />, label: 'Overview & Profile', path: '/dashboard/profile' },
     { icon: <PlusCircle className="w-5 h-5" />, label: 'Add Idea', path: '/dashboard/add-idea' },
     { icon: <BookOpen className="w-5 h-5" />, label: 'My Ideas', path: '/dashboard/my-ideas' },
     { icon: <MessageSquare className="w-5 h-5" />, label: 'My Interactions', path: '/dashboard/my-interactions' },
   ];
+
+  const menuItems = (user?.role === 'admin' || user?.role === 'super-admin') ? adminMenu : userMenu;
 
   return (
     <div className="flex flex-col md:flex-row min-h-[calc(100vh-64px)] bg-gray-50 dark:bg-gray-900 transition-colors">
@@ -32,7 +43,7 @@ export default function Dashboard() {
                 key={i} 
                 to={item.path} 
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 whitespace-nowrap md:whitespace-normal ${
-                  (item.path === '/dashboard' ? location.pathname === '/dashboard' : location.pathname.startsWith(item.path))
+                  ((item.path === '/dashboard/users' || item.path === '/dashboard/all-ideas' || item.path === '/dashboard/all-comments' || item.path === '/dashboard/reports') ? location.pathname === item.path : location.pathname.startsWith(item.path))
                     ? 'bg-primary text-white shadow-md' 
                     : 'text-gray-600 dark:text-gray-300 hover:bg-primary/10 dark:hover:bg-gray-700 hover:text-primary dark:hover:text-primary-400'
                 }`}

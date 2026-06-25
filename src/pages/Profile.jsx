@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../utils/api";
 import toast from "react-hot-toast";
-import { User, Camera } from "lucide-react";
+import { User, Camera, AlertTriangle } from "lucide-react";
 
 export default function Profile() {
   const { user, setUser } = useAuth();
@@ -33,6 +33,18 @@ export default function Profile() {
           Manage your profile information and account settings.
         </p>
       </div>
+
+      {user?.warnedUntil && new Date(user.warnedUntil) > new Date() && (
+        <div className="mb-8 p-5 bg-orange-50 border-l-4 border-orange-500 dark:bg-orange-900/20 dark:border-orange-600 rounded-r-xl flex gap-4 shadow-sm">
+          <AlertTriangle className="w-6 h-6 text-orange-600 dark:text-orange-500 shrink-0 mt-0.5" />
+          <div>
+            <h3 className="text-lg font-bold text-orange-800 dark:text-orange-400">Account Restricted</h3>
+            <p className="text-orange-700 dark:text-orange-300 mt-1">
+              Your account has received a warning and is temporarily restricted from posting new ideas until <strong>{new Date(user.warnedUntil).toLocaleDateString()}</strong>. Please review our community guidelines.
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-8 w-full">
         <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">

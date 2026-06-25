@@ -92,15 +92,7 @@ export default function Navbar() {
                     >
                       <User className="w-4 h-4 text-primary" /> Profile
                     </Link>
-                    {user.role === 'admin' && (
-                      <Link
-                        to="/admin/dashboard"
-                        className="flex items-center gap-2 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 transition-colors"
-                        onClick={() => setProfileOpen(false)}
-                      >
-                        <Shield className="w-4 h-4 text-primary" /> Admin Dashboard
-                      </Link>
-                    )}
+
                     <button
                       onClick={handleLogout}
                       className="flex items-center gap-2 w-full text-left px-4 py-3 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 font-medium transition-colors"
@@ -150,15 +142,7 @@ export default function Navbar() {
             </Link>
             {user ? (
               <>
-                {user.role === 'admin' && (
-                  <Link
-                    to="/admin/dashboard"
-                    className={mobileNavLinkClass("/admin/dashboard")}
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    Admin Dashboard
-                  </Link>
-                )}
+
                 <Link
                   to="/dashboard"
                   className={mobileNavLinkClass("/dashboard")}

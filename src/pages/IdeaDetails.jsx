@@ -4,8 +4,9 @@ import { useAuth } from "../context/AuthContext";
 import api from "../utils/api";
 import Loading from "../components/Loading";
 import toast from "react-hot-toast";
-import { Heart, ThumbsDown, MessageSquare, Calendar, Tag, User, Target, DollarSign, Lightbulb, AlertCircle } from "lucide-react";
+import { Heart, ThumbsDown, MessageSquare, Calendar, Tag, User, Target, DollarSign, Lightbulb, AlertCircle, Flag } from "lucide-react";
 import { motion } from "framer-motion";
+import ReportModal from "../components/ReportModal";
 
 export default function IdeaDetails() {
   const { id } = useParams();
@@ -14,6 +15,7 @@ export default function IdeaDetails() {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(true);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
 
   useEffect(() => {
     document.title = "Idea Details | IdeaVault";
@@ -182,6 +184,20 @@ export default function IdeaDetails() {
                   <ThumbsDown className={`w-5 h-5 ${isDisliked ? 'fill-current' : ''}`} /> 
                   <span>{idea.dislikeCount || 0}</span>
                 </button>
+
+                <button
+                  onClick={() => {
+                    if (!user) {
+                      toast.error("Please login first to report");
+                      return;
+                    }
+                    setReportModalOpen(true);
+                  }}
+                  className="p-2.5 ml-2 rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
+                  title="Report Idea"
+                >
+                  <Flag className="w-5 h-5" />
+                </button>
               </div>
             </div>
 
@@ -344,6 +360,12 @@ export default function IdeaDetails() {
           </div>
         </motion.div>
       </div>
+
+      <ReportModal
+        isOpen={reportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+        ideaId={idea._id}
+      />
     </div>
   );
 }
